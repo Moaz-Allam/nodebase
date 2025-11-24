@@ -18,6 +18,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { cn } from "@/src/lib/utils";
+import { authClient } from "@/src/lib/auth-client";
 
 const loginSchema = z.object({
     email: z.email("Invalid email address"),
@@ -38,7 +39,20 @@ export function LoginForm() {
     });
 
     const onSubmit = async (data: loginFormValues) => {
-        console.log(data);
+        await authClient.signIn.email({
+            email: data.email,
+            password: data.password,
+            callbackURL: "/",
+        },
+        {
+            onSuccess: () => {
+                router.push("/");
+            },
+            onError: (error) => {
+                toast.error(error.error.message || "Something went wrong during login.");
+            }
+        }
+    )
     }
 
     const isPending = form.formState.isSubmitting;
@@ -117,10 +131,7 @@ export function LoginForm() {
                                 Don't have an account?{" "}
                                 <Link
                                     href="/signup"
-                                    className={cn(
-                                        "underline underline-offset-4",
-                                    )}
-                                >
+                                    className="underline underline-offset-4">
                                     Sign up
                                 </Link>
                             </div>
